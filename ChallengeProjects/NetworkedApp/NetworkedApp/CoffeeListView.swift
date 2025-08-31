@@ -1,42 +1,54 @@
 import SwiftUI
 
 struct CoffeeListView: View {
-    @State private var coffees: [Coffee] = [] // サーバーから取得するコーヒー一覧データ
-
+    @State private var coffees: [Coffee] = []
+    
     var body: some View {
-        NavigationStack { // ← NavigationStackを追加して画面遷移を管理
+        NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 20) {
                     ForEach(coffees) { coffee in
                         NavigationLink(destination: CoffeeDetailView(coffee: coffee)) {
-                            // ← アイテムをタップすると詳細画面へ遷移
                             CoffeeItemView(coffee: coffee)
-                                .padding(.horizontal)
+                                .padding(.horizontal, 20)
                         }
                     }
                 }
-                .padding(.vertical)
             }
-            .navigationTitle("Coffees") // ← 画面上部にタイトルを追加
-        }
-        .task {
-            do {
-                coffees = try await getCoffees()
-            } catch {
-                print("Failed to fetch coffees: \(error)")
+            .navigationTitle("Coffees")
+            .navigationBarTitleDisplayMode(.inline)
+            .refreshable {
+                do {
+                    self.coffees = try await getCoffees()
+                } catch {
+                    print("Error: \(error.localizedDescription)")
+                }
+            }
+            .task {
+                do {
+                    self.coffees = try await getCoffees()
+                } catch {
+                    print("Error: \(error.localizedDescription)")
+                }
             }
         }
     }
-
-    // MARK: - APIデータ取得メソッド
+    
+    // MARK: - Methods
     func getCoffees() async throws -> [Coffee] {
-        guard let url = URL(string: "https://api.sampleapis.com/coffee/hot") else { return [] }
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let coffees = try JSONDecoder().decode([Coffee].self, from: data)
-        return coffees
+        do {
+            guard let url = URL(string: "https://api.sampleapis.com/coffee/hot") else { return [] }
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let coffee = try JSONDecoder().decode([Coffee].self, from: data)
+            dump(coffee)
+            return coffee
+        } catch {
+            throw error
+        }
     }
 }
 
 #Preview {
     CoffeeListView()
 }
+

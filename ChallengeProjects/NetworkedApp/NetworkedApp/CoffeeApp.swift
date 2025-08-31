@@ -1,10 +1,11 @@
 import SwiftUI
 
 @main
-struct NetworkedApp: App {
+struct CoffeeApp: App {
     var body: some Scene {
         WindowGroup {
             MainTabView()
         }
     }
 }
+
