@@ -1,6 +1,6 @@
 import Foundation
 
-struct Coffee: Decodable, Identifiable {
+struct Coffee: Codable, Identifiable, Equatable {
     var id: Int
     var title: String
     var description: String
